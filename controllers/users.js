@@ -20,7 +20,7 @@ const getUserBuId = (req, res) => {
     })
     .catch((err) => {
       if (err.message.includes('ObjectId failed for value')) {
-        res.status(404).send({ message: 'Пользователь не найден' });
+        res.status(400).send({ message: 'Пользователь не найден' });
       } else {
         res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
       }
@@ -50,7 +50,7 @@ const updateProfile = (req, res) => {
       res.send(updatedUser);
     })
     .catch((err) => {
-      if (err.message.includes('Validation failed')) {
+      if (err.message.includes('validation failed')) {
         res.status(400).send({ message: 'Переданы некорректные данные' });
         return;
       }
