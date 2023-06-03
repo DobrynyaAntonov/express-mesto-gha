@@ -14,10 +14,12 @@ const getUsers = (req, res) => {
 
 const getUserBuId = (req, res) => {
   User.findById(req.params.userId)
-    .orFail(() => new Error('Not found'))
-    .then((user) => res.send(user))
+    // eslint-disable-next-line consistent-return
+    .then((user) => {
+      res.status(200).send(user);
+    })
     .catch((err) => {
-      if (err.message === 'Not found') {
+      if (err.message.includes('ObjectId failed for value')) {
         res.status(404).send({ message: 'Пользователь не найден' });
       } else {
         res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
@@ -48,11 +50,11 @@ const updateProfile = (req, res) => {
       res.send(updatedUser);
     })
     .catch((err) => {
-      if (err.message.includes('validation failed')) {
+      if (err.message.includes('Validation failed')) {
         res.status(400).send({ message: 'Переданы некорректные данные' });
-      } else {
-        res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
+        return;
       }
+      res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
     });
 };
 
