@@ -6,9 +6,9 @@ const getCard = (req, res) => {
     .catch((err) => {
       if (err.message.includes('Validation failed')) {
         res.status(400).send({ message: 'Переданы некорректные данные' });
-      } else {
-        res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
+        return;
       }
+      res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
     });
 };
 
@@ -17,22 +17,18 @@ const deleteCard = (req, res) => {
     .then(() => {
       res.send({ message: 'Карточка успешно удалена' });
     })
-    .catch((err) => {
-      if (err.message.includes('ObjectId failed for value')) {
-        res.status(400).send({ message: 'Карточка с указанным _id не найдена' });
-      } else {
-        res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
-      }
+    .catch(() => {
+      res.status(404).send({ message: 'Карточка с указанным _id не найдена' });
     });
 };
 
 const createCard = (req, res) => {
   Card.create({ ...req.body, owner: req.user._id })
     .then((cards) => res.status(201).send(cards))
-    // eslint-disable-next-line consistent-return
     .catch((err) => {
-      if (err.message.includes('Validation failed')) {
-        return res.status(400).send({ message: 'Переданы некорректные данные' });
+      if (err.message.includes('validation failed')) {
+        res.status(400).send({ message: 'Переданы некорректные данные' });
+        return;
       }
       res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
     });
@@ -44,11 +40,15 @@ const addLike = (req, res) => {
       res.send(updatedCard);
     })
     .catch((err) => {
-      if (err.message.includes('ObjectId failed for value')) {
-        res.status(400).send({ message: 'Карточка с указанным _id не найдена' });
-      } else {
-        res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
+      if (err.message.includes('BSONError')) {
+        res.status(400).send({ message: 'Переданы некорректные данные пользователя' });
+        return;
       }
+      if (err.message.includes('ObjectId failed for value')) {
+        res.status(404).send({ message: 'Передан несуществующий _id карточки' });
+        return;
+      }
+      res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
     });
 };
 
@@ -58,11 +58,15 @@ const removeLike = (req, res) => {
       res.send(updatedCard);
     })
     .catch((err) => {
-      if (err.message.includes('ObjectId failed for value')) {
-        res.status(400).send({ message: 'Карточка с указанным _id не найдена' });
-      } else {
-        res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
+      if (err.message.includes('BSONError')) {
+        res.status(400).send({ message: 'Переданы некорректные данные пользователя' });
+        return;
       }
+      if (err.message.includes('ObjectId failed for value')) {
+        res.status(404).send({ message: 'Передан несуществующий _id карточки' });
+        return;
+      }
+      res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
     });
 };
 

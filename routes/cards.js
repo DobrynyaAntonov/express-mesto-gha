@@ -5,9 +5,9 @@ const {
 
 router.get('/', getCard);
 
-router.delete('/:cardId', deleteCard);
-
 router.post('/', createCard);
+
+router.delete('/:cardId', deleteCard);
 
 router.delete('/:cardId/likes', removeLike);
 

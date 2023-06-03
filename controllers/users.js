@@ -20,7 +20,7 @@ const getUserBuId = (req, res) => {
     })
     .catch((err) => {
       if (err.message.includes('ObjectId failed for value')) {
-        res.status(400).send({ message: 'Пользователь не найден' });
+        res.status(404).send([{ message: 'Пользователь не найден' }]);
       } else {
         res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
       }
@@ -42,16 +42,16 @@ const createUser = (req, res) => {
 const updateProfile = (req, res) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
-    // eslint-disable-next-line consistent-return
     .then((updatedUser) => {
-      if (!updatedUser) {
-        return res.status(404).send({ message: 'Пользователь не найден' });
-      }
       res.send(updatedUser);
     })
     .catch((err) => {
-      if (err.message.includes('validation failed')) {
+      if (err.message.includes('Validation failed')) {
         res.status(400).send({ message: 'Переданы некорректные данные' });
+        return;
+      }
+      if (err.message.includes('ObjectId failed for value')) {
+        res.status(404).send({ message: 'Пользователь не найден' });
         return;
       }
       res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
@@ -62,19 +62,19 @@ const updateAvatar = (req, res) => {
   const { avatar } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
-    // eslint-disable-next-line consistent-return
     .then((updatedUser) => {
-      if (!updatedUser) {
-        return res.status(404).send({ message: 'Пользователь не найден' });
-      }
       res.send(updatedUser);
     })
     .catch((err) => {
-      if (err.message.includes('validation failed')) {
+      if (err.message.includes('Validation failed')) {
         res.status(400).send({ message: 'Переданы некорректные данные' });
-      } else {
-        res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
+        return;
       }
+      if (err.message.includes('ObjectId failed for value')) {
+        res.status(404).send({ message: 'Пользователь не найден' });
+        return;
+      }
+      res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
     });
 };
 
