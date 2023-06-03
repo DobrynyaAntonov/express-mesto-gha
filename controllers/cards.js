@@ -1,8 +1,8 @@
-const User = require('../models/user');
+const Card = require('../models/card');
 
-const getUsers = (req, res) => {
-  User.find({})
-    .then((users) => res.send(users))
+const getCard = (req, res) => {
+  Card.find({})
+    .then((cards) => res.send(cards))
     .catch((err) => {
       if (err.message.includes('validation failed')) {
         res.status(400).send({ message: 'Переданы некорректные данные' });
@@ -12,40 +12,38 @@ const getUsers = (req, res) => {
     });
 };
 
-const getUserBuId = (req, res) => {
-  User.findById(req.params.userId)
-    .orFail(() => new Error('Not found'))
-    .then((user) => res.send(user))
-    .catch((err) => {
-      if (err.message === 'Not found') {
-        res.status(404).send({ message: 'Пользователь не найден' });
-      } else {
-        res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
-      }
-    });
-};
-
-const createUser = (req, res) => {
-  User.create(req.body)
-    .then((user) => res.status(201).send(user))
-    .catch((err) => {
-      if (err.message.includes('validation failed')) {
-        res.status(400).send({ message: 'Переданы некорректные данные' });
-      } else {
-        res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
-      }
-    });
-};
-
-const updateProfile = (req, res) => {
-  const { name, about } = req.body;
-  User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
+const deleteCard = (req, res) => {
+  Card.findByIdAndDelete(req.params.cardId)
     // eslint-disable-next-line consistent-return
-    .then((updatedUser) => {
-      if (!updatedUser) {
-        return res.status(404).send({ message: 'Пользователь не найден' });
+    .then((deletedCard) => {
+      if (!deletedCard) {
+        return res.status(404).send({ message: 'Карточка с указанным _id не найдена' });
       }
-      res.send(updatedUser);
+      res.send({ message: 'Карточка успешно удалена' });
+    })
+    .catch((err) => res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack }));
+};
+
+const createCard = (req, res) => {
+  Card.create({ ...req.body, owner: req.user._id })
+    .then((cards) => res.status(201).send(cards))
+    .catch((err) => {
+      if (err.message.includes('validation failed')) {
+        res.status(400).send({ message: 'Переданы некорректные данные' });
+      } else {
+        res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
+      }
+    });
+};
+
+const addLike = (req, res) => {
+  Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true })
+    // eslint-disable-next-line consistent-return
+    .then((updatedCard) => {
+      if (!updatedCard) {
+        return res.status(404).send({ message: 'Карточка с указанным _id не найдена' });
+      }
+      res.send(updatedCard);
     })
     .catch((err) => {
       if (err.message.includes('validation failed')) {
@@ -56,16 +54,14 @@ const updateProfile = (req, res) => {
     });
 };
 
-const updateAvatar = (req, res) => {
-  const { avatar } = req.body;
-
-  User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
+const removeLike = (req, res) => {
+  Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
     // eslint-disable-next-line consistent-return
-    .then((updatedUser) => {
-      if (!updatedUser) {
-        return res.status(404).send({ message: 'Пользователь не найден' });
+    .then((updatedCard) => {
+      if (!updatedCard) {
+        return res.status(404).send({ message: 'Карточка с указанным _id не найдена' });
       }
-      res.send(updatedUser);
+      res.send(updatedCard);
     })
     .catch((err) => {
       if (err.message.includes('validation failed')) {
@@ -77,9 +73,9 @@ const updateAvatar = (req, res) => {
 };
 
 module.exports = {
-  getUsers,
-  getUserBuId,
-  createUser,
-  updateProfile,
-  updateAvatar,
+  getCard,
+  deleteCard,
+  createCard,
+  addLike,
+  removeLike,
 };
