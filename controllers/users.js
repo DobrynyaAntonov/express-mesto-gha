@@ -21,7 +21,7 @@ const getUserBuId = (req, res) => {
       res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.message === 'CastError') {
+      if (err.name === 'CastError') {
         res.status(400).send({ message: 'Переданы некорректные данные' });
       } else {
         res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
