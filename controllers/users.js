@@ -14,13 +14,15 @@ const getUsers = (req, res) => {
 
 const getUserBuId = (req, res) => {
   User.findById(req.params.userId)
-    // eslint-disable-next-line consistent-return
     .then((user) => {
+      if (!user) {
+        res.status(404).send({ message: 'Пользователь не найден' });
+      }
       res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.message.includes('ObjectId failed for value')) {
-        res.status(404).send([{ message: 'Пользователь не найден' }]);
+      if (err.message === 'CastError') {
+        res.status(400).send({ message: 'Переданы некорректные данные' });
       } else {
         res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
       }
