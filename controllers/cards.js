@@ -14,11 +14,18 @@ const getCard = (req, res) => {
 
 const deleteCard = (req, res) => {
   Card.findByIdAndDelete(req.params.cardId)
-    .then(() => {
+    .then((card) => {
+      if (!card) {
+        res.status(404).send({ message: 'Передан несуществующий _id карточки' });
+      }
       res.send({ message: 'Карточка успешно удалена' });
     })
-    .catch(() => {
-      res.status(404).send({ message: 'Карточка с указанным _id не найдена' });
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Переданы некорректные данные' });
+        return;
+      }
+      res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
     });
 };
 
