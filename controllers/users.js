@@ -1,14 +1,14 @@
 const User = require('../models/user');
 
+const ERROR_VALIDATION = 400;
+const ERROR_NOT_FOUND = 404;
+const ERROR_INTERNAL_SERVER = 500;
+
 const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.send(users))
     .catch((err) => {
-      if (err.message.includes('validation failed')) {
-        res.status(400).send({ message: 'Переданы некорректные данные' });
-      } else {
-        res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
-      }
+      res.status(ERROR_INTERNAL_SERVER).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
     });
 };
 
@@ -16,15 +16,15 @@ const getUserBuId = (req, res) => {
   User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
-        res.status(404).send({ message: 'Пользователь не найден' });
+        return res.status(ERROR_NOT_FOUND).send({ message: 'Пользователь не найден' });
       }
-      res.status(200).send(user);
+      return res.status(200).send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        res.status(400).send({ message: 'Переданы некорректные данные' });
+        res.status(ERROR_VALIDATION).send({ message: 'Переданы некорректные данные' });
       } else {
-        res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
+        res.status(ERROR_INTERNAL_SERVER).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
       }
     });
 };
@@ -34,9 +34,9 @@ const createUser = (req, res) => {
     .then((user) => res.status(201).send(user))
     .catch((err) => {
       if (err.message.includes('validation failed')) {
-        res.status(400).send({ message: 'Переданы некорректные данные' });
+        res.status(ERROR_VALIDATION).send({ message: 'Переданы некорректные данные' });
       } else {
-        res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
+        res.status(ERROR_INTERNAL_SERVER).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
       }
     });
 };
@@ -45,18 +45,16 @@ const updateProfile = (req, res) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .then((updatedUser) => {
-      res.send(updatedUser);
+      if (!updatedUser) {
+        return res.status(ERROR_NOT_FOUND).send({ message: 'Пользователь не найден' });
+      }
+      return res.send(updatedUser);
     })
     .catch((err) => {
       if (err.message.includes('Validation failed')) {
-        res.status(400).send({ message: 'Переданы некорректные данные' });
-        return;
+        return res.status(ERROR_VALIDATION).send({ message: 'Переданы некорректные данные' });
       }
-      if (err.message.includes('ObjectId failed for value')) {
-        res.status(404).send({ message: 'Пользователь не найден' });
-        return;
-      }
-      res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
+      return res.status(ERROR_INTERNAL_SERVER).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
     });
 };
 
@@ -65,18 +63,16 @@ const updateAvatar = (req, res) => {
 
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .then((updatedUser) => {
-      res.send(updatedUser);
+      if (!updatedUser) {
+        return res.status(ERROR_NOT_FOUND).send({ message: 'Пользователь не найден' });
+      }
+      return res.send(updatedUser);
     })
     .catch((err) => {
       if (err.message.includes('Validation failed')) {
-        res.status(400).send({ message: 'Переданы некорректные данные' });
-        return;
+        return res.status(ERROR_VALIDATION).send({ message: 'Переданы некорректные данные' });
       }
-      if (err.message.includes('ObjectId failed for value')) {
-        res.status(404).send({ message: 'Пользователь не найден' });
-        return;
-      }
-      res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
+      return res.status(ERROR_INTERNAL_SERVER).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
     });
 };
 
