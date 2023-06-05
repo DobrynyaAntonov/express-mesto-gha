@@ -43,7 +43,7 @@ const addLike = (req, res) => {
       res.send(updatedCard);
     })
     .catch((err) => {
-      if (err.message.includes('validation failed')) {
+      if (err.name === 'CastError') {
         res.status(400).send({ message: 'Переданы некорректные данные' });
         return;
       }
@@ -54,15 +54,14 @@ const addLike = (req, res) => {
 const removeLike = (req, res) => {
   Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
     .then((updatedCard) => {
+      if (!updatedCard) {
+        res.status(404).send({ message: 'Передан несуществующий _id карточки' });
+      }
       res.send(updatedCard);
     })
     .catch((err) => {
-      if (err.message.includes('BSONError')) {
-        res.status(400).send({ message: 'Переданы некорректные данные пользователя' });
-        return;
-      }
-      if (err.message.includes('ObjectId failed for value')) {
-        res.status(404).send({ message: 'Передан несуществующий _id карточки' });
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Переданы некорректные данные' });
         return;
       }
       res.status(500).send({ message: 'Внутренняя ошибка сервера', err: err.message, stack: err.stack });
