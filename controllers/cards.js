@@ -1,74 +1,76 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
+const Joi = require('joi');
 const Card = require('../models/card');
+const { NotFound } = require('../middlewares/error');
 
-const ERROR_VALIDATION = 400;
-const ERROR_NOT_FOUND = 404;
-const ERROR_INTERNAL_SERVER = 500;
+// Схема для валидации данных карточки при создании
+const createCardSchema = Joi.object({
+  name: Joi.string().min(2).max(30).required(),
+  link: Joi.string().required(),
+});
 
-const getCard = (req, res) => {
+const getCard = (req, res, next) => {
   Card.find({})
     .then((cards) => res.send(cards))
-    .catch(() => {
-      res.status(ERROR_INTERNAL_SERVER).send({ message: 'Внутренняя ошибка сервера' });
-    });
+    .catch(next);
 };
 
-const deleteCard = (req, res) => {
-  Card.findByIdAndDelete(req.params.cardId)
+const deleteCard = (req, res, next) => {
+  const { cardId } = req.params;
+  const userId = req.user._id;
+
+  Card.findById(cardId)
+    // eslint-disable-next-line consistent-return
     .then((card) => {
       if (!card) {
-        return res.status(ERROR_NOT_FOUND).send({ message: 'Передан несуществующий _id карточки' });
+        throw new NotFound('Передан несуществующий _id карточки');
+        // eslint-disable-next-line max-len
+        // return res.status(ERROR_NOT_FOUND).send({ message: 'Передан несуществующий _id карточки' });
       }
-      return res.send({ message: 'Карточка успешно удалена' });
+      if (card.owner.toString() !== userId) {
+        return res.status(403).send({ message: 'У вас нет прав для удаления этой карточки' });
+      }
+
+      Card.findByIdAndDelete(cardId)
+        .then(() => {
+          res.send({ message: 'Карточка успешно удалена' });
+        })
+        .catch(next);
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        return res.status(ERROR_VALIDATION).send({ message: 'Переданы некорректные данные' });
-      }
-      return res.status(ERROR_INTERNAL_SERVER).send({ message: 'Внутренняя ошибка сервера' });
-    });
+    .catch(next);
 };
 
-const createCard = (req, res) => {
+// eslint-disable-next-line consistent-return
+const createCard = (req, res, next) => {
+  const { error } = createCardSchema.validate(req.body);
+  if (error) {
+    return res.status(400).send({ message: error.details[0].message });
+  }
   Card.create({ ...req.body, owner: req.user._id })
     .then((cards) => res.status(201).send(cards))
-    .catch((err) => {
-      if (err.message.includes('validation failed')) {
-        return res.status(ERROR_VALIDATION).send({ message: 'Переданы некорректные данные' });
-      }
-      return res.status(ERROR_INTERNAL_SERVER).send({ message: 'Внутренняя ошибка сервера' });
-    });
+    .catch(next);
 };
 
-const addLike = (req, res) => {
+const addLike = (req, res, next) => {
   Card.findByIdAndUpdate(req.params.cardId, { $addToSet: { likes: req.user._id } }, { new: true })
     .then((updatedCard) => {
       if (!updatedCard) {
-        return res.status(ERROR_NOT_FOUND).send({ message: 'Передан несуществующий _id карточки' });
+        throw new NotFound('Передан несуществующий _id карточки');
       }
       return res.send(updatedCard);
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        return res.status(ERROR_VALIDATION).send({ message: 'Переданы некорректные данные' });
-      }
-      return res.status(ERROR_INTERNAL_SERVER).send({ message: 'Внутренняя ошибка сервера' });
-    });
+    .catch(next);
 };
 
-const removeLike = (req, res) => {
+const removeLike = (req, res, next) => {
   Card.findByIdAndUpdate(req.params.cardId, { $pull: { likes: req.user._id } }, { new: true })
     .then((updatedCard) => {
       if (!updatedCard) {
-        return res.status(ERROR_NOT_FOUND).send({ message: 'Передан несуществующий _id карточки' });
+        throw new NotFound('Передан несуществующий _id карточки');
       }
       return res.send(updatedCard);
     })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        return res.status(ERROR_VALIDATION).send({ message: 'Переданы некорректные данные' });
-      }
-      return res.status(ERROR_INTERNAL_SERVER).send({ message: 'Внутренняя ошибка сервера' });
-    });
+    .catch(next);
 };
 
 module.exports = {
