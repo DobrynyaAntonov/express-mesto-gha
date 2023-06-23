@@ -38,7 +38,7 @@ class PasswordError extends Error {
   }
 }
 
-class JsonWebTokenError extends Error {
+class AuthError extends Error {
   constructor(message) {
     super(message);
     this.statusCode = 401;
@@ -54,7 +54,7 @@ const errorHandler = (err, req, res, next) => {
   } else if (err.name === 'CastError') {
     error = new ValidationError('Переданы некорректные данные');
   } else if (err.name === 'JsonWebTokenError') {
-    error = new JsonWebTokenError('У Вас нет прав для доступа к этой странице');
+    error = new AuthError('У Вас нет прав для доступа к этой странице');
   } else if (err.message.includes('Validation failed')) {
     error = new ValidationError('Переданы некорректные данные');
   } else if (err.code === 11000) {
@@ -67,5 +67,5 @@ const errorHandler = (err, req, res, next) => {
 };
 
 module.exports = {
-  errorHandler, NotFound, ServerError, ValidationError, PasswordError,
+  errorHandler, NotFound, ServerError, ValidationError, PasswordError, AuthError,
 };

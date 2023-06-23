@@ -6,6 +6,7 @@ const userRoutes = require('./users');
 const cardRoutes = require('./cards');
 const { createUser, login } = require('../controllers/users');
 const auth = require('../middlewares/auth');
+const { NotFound } = require('../middlewares/error');
 
 router.post('/signup', celebrate({
   body: Joi.object().keys({
@@ -28,8 +29,7 @@ router.use(auth);
 router.use('/users', userRoutes);
 router.use('/cards', cardRoutes);
 
-router.use('/*', (req, res) => {
-  res.status(404).send({ message: 'Страница не найдена' });
+router.use('/*', (req, res, next) => {
+  next(new NotFound('Маршрут не найден'));
 });
-
 module.exports = router;

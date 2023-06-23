@@ -17,14 +17,16 @@ const deleteCard = (req, res, next) => {
         throw new NotFound('Передан несуществующий _id карточки');
       }
       if (card.owner.toString() !== userId) {
-        next(new PasswordError('У вас нет прав для удаления этой карточки'));
+        throw new PasswordError('У вас нет прав для удаления этой карточки');
       }
 
-      Card.findByIdAndDelete(cardId)
-        .then(() => {
-          res.send({ message: 'Карточка успешно удалена' });
-        })
-        .catch(next);
+      return Card.findByIdAndRemove(cardId);
+    })
+    .then((deletedCard) => {
+      if (!deletedCard) {
+        throw new NotFound('Карточка не найдена');
+      }
+      res.status(200).send({ message: 'Карточка успешно удалена' });
     })
     .catch(next);
 };

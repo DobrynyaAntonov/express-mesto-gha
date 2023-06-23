@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const jsonWebToken = require('jsonwebtoken');
 const User = require('../models/user');
-const { NotFound, PasswordError } = require('../middlewares/error');
+const { NotFound, AuthError } = require('../middlewares/error');
 
 const getUsers = (req, res, next) => {
   User.find({})
@@ -42,16 +42,16 @@ const login = (req, res, next) => {
     .select('+password')
     .then((user) => {
       if (!user) {
-        next(new NotFound('Пользователь не найден'));
+        next(new AuthError('Пользователь не найден'));
       }
       bcrypt.compare(String(password), user.password)
         .then((isValidUser) => {
           if (isValidUser) {
-            const jwt = jsonWebToken.sign({ _id: user._id }, process.env.JWT_SECRET);
+            const jwt = jsonWebToken.sign({ _id: user._id }, process.env.JWT_SECRET || 'secret');
             res.cookie('jwt', jwt, { maxAge: 360000, httpOnly: true, sameSite: true });
             res.send({ message: 'Авторизация прошла успешно' });
           } else {
-            next(new PasswordError('Вы ввели неправильный пароль'));
+            next(new AuthError('Вы ввели неправильный пароль'));
           }
         });
     })
