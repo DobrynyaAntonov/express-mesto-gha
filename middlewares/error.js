@@ -38,6 +38,14 @@ class PasswordError extends Error {
   }
 }
 
+class JsonWebTokenError extends Error {
+  constructor(message) {
+    super(message);
+    this.statusCode = 401;
+    this.message = message;
+  }
+}
+
 const errorHandler = (err, req, res, next) => {
   let error;
   console.log(err);
@@ -45,7 +53,9 @@ const errorHandler = (err, req, res, next) => {
     error = new NotFound('Пользователь не найден');
   } else if (err.name === 'CastError') {
     error = new ValidationError('Переданы некорректные данные');
-  } else if (err.message.includes('validation failed')) {
+  } else if (err.name === 'JsonWebTokenError') {
+    error = new JsonWebTokenError('У Вас нет прав для доступа к этой странице');
+  } else if (err.message.includes('Validation failed')) {
     error = new ValidationError('Переданы некорректные данные');
   } else if (err.code === 11000) {
     error = new UniqueError('Пользователь с таким email уже существует');
