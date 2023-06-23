@@ -1,13 +1,5 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
-const Joi = require('joi');
 const Card = require('../models/card');
 const { NotFound } = require('../middlewares/error');
-
-// Схема для валидации данных карточки при создании
-const createCardSchema = Joi.object({
-  name: Joi.string().min(2).max(30).required(),
-  link: Joi.string().required(),
-});
 
 const getCard = (req, res, next) => {
   Card.find({})
@@ -42,10 +34,6 @@ const deleteCard = (req, res, next) => {
 
 // eslint-disable-next-line consistent-return
 const createCard = (req, res, next) => {
-  const { error } = createCardSchema.validate(req.body);
-  if (error) {
-    return res.status(400).send({ message: error.details[0].message });
-  }
   Card.create({ ...req.body, owner: req.user._id })
     .then((cards) => res.status(201).send(cards))
     .catch(next);

@@ -1,25 +1,7 @@
 const bcrypt = require('bcrypt');
 const jsonWebToken = require('jsonwebtoken');
-// eslint-disable-next-line import/no-extraneous-dependencies
-const Joi = require('joi');
 const User = require('../models/user');
 const { NotFound } = require('../middlewares/error');
-
-const createUserSchema = Joi.object({
-  name: Joi.string().min(2).max(30).required(),
-  about: Joi.string().min(2).max(30).required(),
-  email: Joi.string().email().required(),
-  password: Joi.string().required(),
-});
-
-const updateProfileSchema = Joi.object({
-  name: Joi.string().min(2).max(30).required(),
-  about: Joi.string().min(2).max(30).required(),
-});
-
-const updateAvatarSchema = Joi.object({
-  avatar: Joi.string().pattern(/^https?:\/\/([\w.-]+)\.([a-zA-Z]{2,6})(\/[\w.-]*)*\/?$/),
-});
 
 const getUsers = (req, res, next) => {
   User.find({})
@@ -40,10 +22,6 @@ const getUserBuId = (req, res, next) => {
 
 // eslint-disable-next-line consistent-return
 const createUser = (req, res, next) => {
-  const { error } = createUserSchema.validate(req.body);
-  if (error) {
-    return res.status(400).send({ message: error.details[0].message });
-  }
   bcrypt.hash(String(req.body.password), 10)
     .then((hashPassword) => {
       User.create({
@@ -81,10 +59,6 @@ const login = (req, res, next) => {
 
 // eslint-disable-next-line consistent-return
 const updateProfile = (req, res, next) => {
-  const { error } = updateProfileSchema.validate(req.body);
-  if (error) {
-    return res.status(400).send({ message: error.details[0].message });
-  }
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .then((updatedUser) => {
@@ -98,10 +72,6 @@ const updateProfile = (req, res, next) => {
 
 // eslint-disable-next-line consistent-return
 const updateAvatar = (req, res, next) => {
-  const { error } = updateAvatarSchema.validate(req.body);
-  if (error) {
-    return res.status(400).send({ message: error.details[0].message });
-  }
   const { avatar } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
