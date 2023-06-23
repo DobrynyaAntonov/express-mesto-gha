@@ -4,6 +4,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
+// eslint-disable-next-line import/no-extraneous-dependencies
+const { errors } = require('celebrate');
 const router = require('./routes');
 const { errorHandler } = require('./middlewares/error');
 
@@ -17,6 +19,7 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(router);
+app.use(errors());
 app.use(errorHandler);
 
 // eslint-disable-next-line no-console

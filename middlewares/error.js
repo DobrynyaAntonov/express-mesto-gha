@@ -55,7 +55,7 @@ const errorHandler = (err, req, res, next) => {
     error = new ValidationError('Переданы некорректные данные');
   } else if (err.name === 'JsonWebTokenError') {
     error = new JsonWebTokenError('У Вас нет прав для доступа к этой странице');
-  } else if (err.message.includes('Validation failed')) {
+  } else if (err.message.includes('Validation failed') || err.statusCode === 400) {
     error = new ValidationError('Переданы некорректные данные');
   } else if (err.code === 11000) {
     error = new UniqueError('Пользователь с таким email уже существует');

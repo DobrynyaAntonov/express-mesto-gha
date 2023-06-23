@@ -1,5 +1,5 @@
 const Card = require('../models/card');
-const { NotFound } = require('../middlewares/error');
+const { NotFound, PasswordError } = require('../middlewares/error');
 
 const getCard = (req, res, next) => {
   Card.find({})
@@ -16,11 +16,10 @@ const deleteCard = (req, res, next) => {
     .then((card) => {
       if (!card) {
         throw new NotFound('Передан несуществующий _id карточки');
-        // eslint-disable-next-line max-len
-        // return res.status(ERROR_NOT_FOUND).send({ message: 'Передан несуществующий _id карточки' });
       }
       if (card.owner.toString() !== userId) {
-        return res.status(403).send({ message: 'У вас нет прав для удаления этой карточки' });
+        next(new PasswordError('У вас нет прав для удаления этой карточки'));
+        // return res.status(403).send({ message: 'У вас нет прав для удаления этой карточки' });
       }
 
       Card.findByIdAndDelete(cardId)
