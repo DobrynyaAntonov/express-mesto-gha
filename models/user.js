@@ -5,15 +5,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: 'Жак-Ив Кусто',
     required: false,
-    // minlength: 2,
-    // maxlength: 30,
   },
   about: {
     type: String,
     default: 'Исследователь',
     required: false,
-    // minlength: 2,
-    // maxlength: 30,
   },
   avatar: {
     type: String,
@@ -32,4 +28,4 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model('user', userSchema);
+module.exports = mongoose.model('User', userSchema);

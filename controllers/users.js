@@ -20,14 +20,17 @@ const getUserBuId = (req, res, next) => {
     .catch(next);
 };
 
-// eslint-disable-next-line consistent-return
 const createUser = (req, res, next) => {
   bcrypt.hash(String(req.body.password), 10)
     .then((hashPassword) => {
       User.create({
-        ...req.body, password: hashPassword,
+        ...req.body,
+        password: hashPassword,
       })
-        .then((user) => res.status(201).send(user))
+        .then((user) => {
+          const { password, ...userWithoutPassword } = user.toObject();
+          res.status(201).send(userWithoutPassword);
+        })
         .catch(next);
     });
 };
@@ -40,7 +43,6 @@ const login = (req, res, next) => {
     .then((user) => {
       if (!user) {
         next(new NotFound('Пользователь не найден'));
-        // throw new NotFound('Пользователь не найден');
       }
       bcrypt.compare(String(password), user.password)
         .then((isValidUser) => {
@@ -49,16 +51,13 @@ const login = (req, res, next) => {
             res.cookie('jwt', jwt, { maxAge: 360000, httpOnly: true, sameSite: true });
             res.send({ message: 'Авторизация прошла успешно' });
           } else {
-            // res.status(403).send({ message: 'Вы ввели неправильный пароль ' });
             next(new PasswordError('Вы ввели неправильный пароль'));
-            // throw new PasswordError('Вы ввели неправильный пароль');
           }
         });
     })
     .catch(next);
 };
 
-// eslint-disable-next-line consistent-return
 const updateProfile = (req, res, next) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
@@ -71,7 +70,6 @@ const updateProfile = (req, res, next) => {
     .catch(next);
 };
 
-// eslint-disable-next-line consistent-return
 const updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
 

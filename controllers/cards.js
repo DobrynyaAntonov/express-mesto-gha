@@ -12,14 +12,12 @@ const deleteCard = (req, res, next) => {
   const userId = req.user._id;
 
   Card.findById(cardId)
-    // eslint-disable-next-line consistent-return
     .then((card) => {
       if (!card) {
         throw new NotFound('Передан несуществующий _id карточки');
       }
       if (card.owner.toString() !== userId) {
         next(new PasswordError('У вас нет прав для удаления этой карточки'));
-        // return res.status(403).send({ message: 'У вас нет прав для удаления этой карточки' });
       }
 
       Card.findByIdAndDelete(cardId)
@@ -31,7 +29,6 @@ const deleteCard = (req, res, next) => {
     .catch(next);
 };
 
-// eslint-disable-next-line consistent-return
 const createCard = (req, res, next) => {
   Card.create({ ...req.body, owner: req.user._id })
     .then((cards) => res.status(201).send(cards))
