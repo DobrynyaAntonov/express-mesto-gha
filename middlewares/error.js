@@ -57,6 +57,10 @@ const errorHandler = (err, req, res, next) => {
     error = new AuthError('У Вас нет прав для доступа к этой странице');
   } else if (err.message.includes('Validation failed')) {
     error = new ValidationError('Переданы некорректные данные');
+  } else if (err.statusCode === 403) {
+    error = new PasswordError('У вас нет прав для удаления этой карточки');
+  } else if (err.statusCode === 401) {
+    error = new AuthError('Вы ввели неправильный логин или пароль');
   } else if (err.code === 11000) {
     error = new UniqueError('Пользователь с таким email уже существует');
   } else {
