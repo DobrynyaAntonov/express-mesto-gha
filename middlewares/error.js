@@ -57,6 +57,9 @@ const errorHandler = (err, req, res, next) => {
     error = new AuthError('У Вас нет прав для доступа к этой странице');
   } else if (err.message.includes('Validation failed')) {
     error = new ValidationError('Переданы некорректные данные');
+  // eslint-disable-next-line no-underscore-dangle
+  } else if (err._message.includes('card validation failed')) {
+    error = new ValidationError('Переданы не все данные');
   } else if (err.statusCode === 403) {
     error = new PasswordError('У вас нет прав для удаления этой карточки');
   } else if (err.statusCode === 401) {
