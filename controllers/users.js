@@ -49,7 +49,7 @@ const login = (req, res, next) => {
           if (isValidUser) {
             const jwt = jsonWebToken.sign({ _id: user._id }, process.env.JWT_SECRET || 'secret');
             res.cookie('jwt', jwt, {
-              maxAge: 3600000, httpOnly: true, sameSite: true, secure: true,
+              maxAge: 3600000, httpOnly: true, sameSite: 'none', secure: true,
             });
             res.send({ message: 'Авторизация прошла успешно' });
           } else {
