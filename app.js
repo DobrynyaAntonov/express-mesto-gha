@@ -18,7 +18,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
 });
 
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://mesto.dobrynya.nomoredomains.work'],
+  origin: 'https://mesto.dobrynya.nomoredomains.work',
   credentials: true,
 }));
 app.use(bodyParser.json());

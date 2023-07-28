@@ -10,6 +10,7 @@ function logger(fileName, obj) {
     logs.table.push(obj);
 
     fs.writeFile(logPath, JSON.stringify(logs), (writeErr) => {
+      // eslint-disable-next-line no-console
       console.log('werr', writeErr);
     });
   });
