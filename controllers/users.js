@@ -48,7 +48,9 @@ const login = (req, res, next) => {
         .then((isValidUser) => {
           if (isValidUser) {
             const jwt = jsonWebToken.sign({ _id: user._id }, process.env.JWT_SECRET || 'secret');
-            res.cookie('jwt', jwt, { maxAge: 3600000, httpOnly: true, sameSite: true });
+            res.cookie('jwt', jwt, {
+              maxAge: 3600000, httpOnly: true, sameSite: true, secure: true,
+            });
             res.send({ message: 'Авторизация прошла успешно' });
           } else {
             next(new AuthError('Вы ввели неправильный пароль'));
