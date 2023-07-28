@@ -10,7 +10,7 @@ router.get('/', getUsers);
 
 router.get('/me', auth, getUserById);
 
-// router.get('/:userId', getUserById);
+router.get('/:userId', auth, getUserById);
 
 router.patch('/me', auth, celebrate({
   body: Joi.object().keys({
