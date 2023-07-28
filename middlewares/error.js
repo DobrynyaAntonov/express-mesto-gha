@@ -1,4 +1,6 @@
 // eslint-disable-next-line max-classes-per-file
+const { logger } = require('./logger');
+
 class ServerError extends Error {
   constructor(message) {
     super(message);
@@ -48,6 +50,7 @@ class AuthError extends Error {
 
 const errorHandler = (err, req, res, next) => {
   let error;
+  // eslint-disable-next-line no-console
   console.log(err);
   if (err.statusCode === 404) {
     error = new NotFound('Пользователь не найден');
@@ -66,6 +69,9 @@ const errorHandler = (err, req, res, next) => {
   } else {
     error = new ServerError('Внутренняя ошибка сервера');
   }
+
+  logger('error.log', { error: error.message, date: new Date() });
+
   res.status(error.statusCode).send({ message: error.message });
   next();
 };

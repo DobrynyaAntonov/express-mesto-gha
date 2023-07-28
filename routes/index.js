@@ -7,6 +7,19 @@ const cardRoutes = require('./cards');
 const { createUser, login } = require('../controllers/users');
 const auth = require('../middlewares/auth');
 const { NotFound } = require('../middlewares/error');
+const { apiLogger } = require('../middlewares/logger');
+
+router.use(apiLogger);
+
+router.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Сервер сейчас упадёт');
+  }, 0);
+});
+
+router.get('/loginout', (req, res) => {
+  res.clearCookie('jwt', { sameSite: 'None', secure: true }).send({ message: 'Кука удалена' });
+});
 
 router.post('/signup', celebrate({
   body: Joi.object().keys({

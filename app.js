@@ -6,6 +6,8 @@ const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const { errors } = require('celebrate');
+// eslint-disable-next-line import/no-extraneous-dependencies
+const cors = require('cors');
 const router = require('./routes');
 const { errorHandler } = require('./middlewares/error');
 
@@ -15,6 +17,10 @@ mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
   useNewUrlParser: true,
 });
 
+app.use(cors({
+  origin: ['http://localhost:3000', 'https://mesto.dobrynya.nomoredomains.work'],
+  credentials: true,
+}));
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -23,4 +29,4 @@ app.use(errors());
 app.use(errorHandler);
 
 // eslint-disable-next-line no-console
-app.listen(3000, () => console.log('ok'));
+app.listen(4000, () => console.log('ok'));

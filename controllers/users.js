@@ -9,8 +9,8 @@ const getUsers = (req, res, next) => {
     .catch(next);
 };
 
-const getUserBuId = (req, res, next) => {
-  User.findById(req.params.userId)
+const getUserById = (req, res, next) => {
+  User.findById(req.user._id)
     .then((user) => {
       if (!user) {
         throw new NotFound();
@@ -48,7 +48,7 @@ const login = (req, res, next) => {
         .then((isValidUser) => {
           if (isValidUser) {
             const jwt = jsonWebToken.sign({ _id: user._id }, process.env.JWT_SECRET || 'secret');
-            res.cookie('jwt', jwt, { maxAge: 360000, httpOnly: true, sameSite: true });
+            res.cookie('jwt', jwt, { maxAge: 3600000, httpOnly: true, sameSite: true });
             res.send({ message: 'Авторизация прошла успешно' });
           } else {
             next(new AuthError('Вы ввели неправильный пароль'));
@@ -85,7 +85,7 @@ const updateAvatar = (req, res, next) => {
 
 module.exports = {
   getUsers,
-  getUserBuId,
+  getUserById,
   createUser,
   updateProfile,
   updateAvatar,
