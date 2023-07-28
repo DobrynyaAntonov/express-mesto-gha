@@ -17,10 +17,6 @@ mongoose.connect('mongodb://127.0.0.1:27017/mestodb', {
   useNewUrlParser: true,
 });
 
-app.use((req, res) => {
-  res.header('Access-Control-Allow-Origin', '*');
-});
-
 app.use(cors({
   origin: 'https://mesto.dobrynya.nomoredomains.work',
   credentials: true,
