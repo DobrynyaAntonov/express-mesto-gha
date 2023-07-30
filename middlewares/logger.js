@@ -2,16 +2,27 @@ const fs = require('fs');
 const path = require('path');
 
 function logger(fileName, obj) {
-  const logPath = path.resolve((process.cwd(), fileName));
+  const logPath = path.resolve(process.cwd(), fileName);
 
   fs.readFile(logPath, (err, data) => {
-    const logs = data ? JSON.parse(data.toString()) : { table: [] };
+    let logs = { table: [] };
+
+    if (!err && data && data.length > 0) {
+      try {
+        logs = JSON.parse(data.toString());
+      } catch (parseErr) {
+        // eslint-disable-next-line no-console
+        console.log('Error parsing JSON:', parseErr);
+      }
+    }
 
     logs.table.push(obj);
 
     fs.writeFile(logPath, JSON.stringify(logs), (writeErr) => {
-      // eslint-disable-next-line no-console
-      console.log('werr', writeErr);
+      if (writeErr) {
+        // eslint-disable-next-line no-console
+        console.log('Error writing to file:', writeErr);
+      }
     });
   });
 }
